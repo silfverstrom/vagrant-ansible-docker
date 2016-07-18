@@ -1,0 +1,55 @@
+---
+- hosts: all
+  sudo: true
+  tasks:
+    - name: install curl
+      apt: name=curl state=present
+    - name: install python-pip 
+      apt: name=python-pip state=present
+    - name: install docker.io
+      apt: name=docker.io state=present
+    - name: install redis-tools
+      apt: name=redis-tools state=present
+    - name: install docker-py
+      pip: name=docker-py state=present
+    - name: mydata
+      docker:
+        docker_api_version: 1.18
+        cpu_set: 0
+        net: 'bridge'
+        name: mydata
+        image: training/postgres
+        state: started
+        volumes:
+        - /data
+    - name: Redis
+      docker:
+        docker_api_version: 1.18
+        cpu_set: 0
+        net: 'bridge'
+        name: redis
+        image: redis
+        command: redis-server --appendonly yes
+        state: started
+        expose:
+          - 6379
+        volumes_from:
+        - mydata
+    - name: custom
+      docker_image:
+        docker_api_version: 1.18
+        name: "node_js_custom"
+        path: "/vagrant/src/"
+        state: present
+    - name: node_js
+      docker:
+        docker_api_version: 1.18
+        cpu_set: 0
+        net: 'host'
+        name: node_js
+        image: node_js_custom
+        state: started
+        expose:
+          - 8888
+        volumes_from:
+        - mydata
