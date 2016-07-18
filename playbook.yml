@@ -50,7 +50,7 @@
         image: node_js_custom
         state: started
         env:
-          NODE_ENV: production
+          NODE_ENV: "production"
         expose:
           - 8888
         volumes_from:
